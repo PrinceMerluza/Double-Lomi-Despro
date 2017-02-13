@@ -1,0 +1,105 @@
+FURTHERANCE 
+
+ALARM TEXT (UNTESTED)
+-manual activation of alarm
+
+CASE INSENSITIVE (UNTESTED)
+-for commands to be sent. and also update commands
+
+TEXT ON DOOR OPEN
+-
+
+PHONEBOOK NAME (FOR DESPRO 3) 
+-names would be saved in the contacts of the PHONEBOOK.
+-update keypad to have letter capability.
+
+MISSCALL SIM900 (OPTIONAL)
+-miscall would automatically turn on the lock for the system.
+
+DONE :: VIDEO TESTING (FOR DESPRO2)
+-scripted testing of the modules.
+
+DONE :: USER MANUAL (FOR DESPRO2)
+-user manual for the owner of the house.
+
+CONSIDERATIONS
+-library for GSM
+https://github.com/Seeed-Studio/GPRS_SIM900
+https://github.com/MarcoMartines/GSM-GPRS-GPS-Shield
+https://github.com/jefflab/GSMSHIELD
+https://github.com/motion55/GSM-GPRS-GPS-Shield/releases/tag/v3.13_SMSONLY
+
+------------------------
+
+2016 10 14 NOTES... @ DESPRO MOCK DEFENSE
+
+KNOWN:
+When sending SMS while SIM900 is busy, the Arduino will not be able to receive 
+and evaluate the SMS.
+
+
+
+SOLVED:
+sendimg message lcd <--  busy sending message when sim900 is SENDING
+
+open door command <- implemented
+
+alarm immediately on opening <- putting prevT of door on close instance.
+
+
+
+
+------------- NOTES/CONSIDERATION ---------------
+-menuState = 5, or the refceiving state. not yet implemented. still 
+considering if lcd should be locked as prima facie there is no effect 
+either way. pagiisipan pa.
+
+-to check kung pwede short as replacement for int. spec for sensor gas threshold.
+
+-SENDING MESSAGE will delay everything in the program.
+especially if PB is too large.
+need to check if sim900 can still receive the message with no problem
+as process busy with sending message.
+
+------------ BUGGY SHIT ---------------------
+-pressinf 'B' back from Lst Contacts with 0 contacts will MATRIX the LCD 
+display
+
+-minsan kulang ang narereceive na message. Ex: imbes na 'bukas' 'buka' 
+lang. possible fix is limiting txt commands to 4 or finding reason of this 
+fkin error.
+
+----------- FIXED BUGS:- -------------------
+-countContacts return (real number of contacts) - 1 because AT+CPBR=1 is 
+
+not running for some reason.l making the first number nonexistent
+FIUXED: changed countContacts() to statechange from message(alert) to 
+
+previous state. 9/13/2016	+--																																																																																																																										+
+			
+---------- TODO:------------------------
+9/13/16:
+Phonebook 3 release candidate. all SMS functinoalitiies working . ready to consoldiate wioth rest of modules.
+ISSUE: wala pang code para iassure na walang ibang magpoprocess lalo
+na habang nagsesend sa malaking list ng number.
+
+Phonebook Modification
+05/15/16: Works with Serial Monitor.
+CURRENT: Using LCD and Control for PB modification
+
+SMS Send/Receive
+PROBLEM: Receiving does not work with Serial Monitor testing.
+CURRENT: Sending from SIM900 and using LCD and Control.
+
+CONSIDERATION FOR USING HWSERIAL INSTEEAD OF SWSERIAL OIN SIM900
+Due to problem with timeouts on SIM900 Serial communication resulting in incomplete/corrupted data.
+-denied. ayaw din gumana ng serial sa mega orbobo lang ako.
+
++refactor c strings
+-05/15/16: done for major versions
+
+-------------------- MAJOR VERSIONS:- ----------------------
+lcd_control: lcd display, navigation, and control 
+phonebook3: SIM900 with Serial Monitor. testing with SIM functionalities.
+
+consolidated: release cadidate. 

@@ -1,0 +1,220 @@
+/*PHONEBOK 2
+Using actual phonebok entries as entries for usrs
+v3 - using char arrays instead of Striong objects
+
+BAKUP DETAILS 
+Created before addition of removing number feature. Stable for all else except factory reset.
+
+*/
+
+#include <SoftwareSerial.h>
+#include <stdio.h>
+#define MAXCONTACTS 15
+
+SoftwareSerial SIM900(10, 11);
+
+byte index = 0; //index for filling serial input array
+byte iForPBList = 1; //index for phonebook list
+char inChar = -1; //temp char for incoming char for serial input
+byte state = 0;
+
+byte numContacts = 0;
+
+char input[20] = ""; 
+char* ptr_input = input; //pointer for serial input
+char ATcommand[50] = ""; //commands to be sent to SIM900
+char tempNum[12] = ""; //phone number parameter
+char pbNumberList[MAXCONTACTS][12];
+
+void setup(){
+	Serial.begin(19200); // for serial monitor
+	while(!Serial);
+	SIM900.begin(19200); // for GSM shield
+	while(!SIM900);
+	delay(100);
+	
+	countContacts();
+	showMenu();
+
+}
+
+void countContacts(){
+	numContacts = 0;
+	clearNumberList();
+	for(byte i = 1; i < MAXCONTACTS; i++){
+		strcpy(ATcommand, "AT+CPBR=");
+		addBytToString(ATcommand, i);
+		SIM900.println(ATcommand);
+		delay(100);
+		
+		while(SIM900.available() > 0){
+			inChar = SIM900.read(); 
+			Serial.print(inChar);
+			if(inChar == ':'){
+				while(inChar != '"'){
+					inChar = SIM900.read();
+				}
+				for(byte i = 0; i < 11; i++){
+					tempNum[i] = SIM900.read();
+				}
+				strcat(pbNumberList[numContacts],tempNum);
+				pbNumberList[numContacts][11] = '\0';
+				
+				numContacts++;
+			}
+		}
+	}
+	Serial.print("Number of Contacts: ");
+	Serial.println(numContacts);	
+}
+
+//clear the numbers list form the array bNumberList
+void clearNumberList(){
+	for(byte i = 0; i < MAXCONTACTS; i++){
+		pbNumberList[i][0] = '\0';
+	}
+}
+
+//Display menu to Serial Monitr
+void showMenu(){
+	Serial.println("1. Add contact");
+	Serial.println("2. Remove Contact");
+	Serial.println("3. Find Contact");
+	Serial.println("4. List Contacts");
+	Serial.println("5. List Numbers");
+	Serial.println("6. Direct Command");
+	Serial.println("0. Factory Reset");
+}
+
+//concatenate a single char to a cstring
+void addCharToString(char* srcStr, char a){
+    char* tmpstr;
+    tmpstr = (char *) malloc(2);
+    tmpstr[0] = a;
+    tmpstr[1] = '\0';
+ 
+    strcat(srcStr, tmpstr);
+    free(tmpstr);
+}
+
+//concatenate a byte to a cstring
+void addBytToString(char* srcStr, byte a){
+	if(a < 10){
+		addCharToString(srcStr, char(a + 48));	
+	}else{
+		addCharToString(srcStr, char((a/10) + 48));
+		addCharToString(srcStr, char((a%10) + 48));
+	}
+}
+
+//reset vlaues after every state change
+void resetStuff(){
+	ATcommand[0] = '\0';
+	iForPBList = 1;
+	state = 0;
+	showMenu();
+}
+
+void loop(){
+	//Serial input
+	
+	switch(state){
+		
+	//SERIAL INPUT	
+	case 0:
+		index = 0;
+		while(Serial.available() > 0){
+			if(index < 19){
+				inChar = Serial.read();
+				input[index] = inChar;	
+				index++;
+				input[index] = '\0';
+			}
+			delay(50); //to capture next characters instead of escaping the while loop
+		}
+		break;
+	
+	//LIST CONTACTS	
+	case 4:	
+		ATcommand[0] = '\0';
+		if(iForPBList <= MAXCONTACTS){
+			strcpy(ATcommand, "AT+CPBR=");
+			addBytToString(ATcommand, iForPBList);
+			strcat(ATcommand, "\r");
+			
+			SIM900.println(ATcommand);
+			delay(100);
+			iForPBList++;
+		}else{
+			resetStuff();
+		}
+		break;
+		
+	//DELETING ALL CONTACTS
+	//NOTE: PROBLEM WITH NOT DELETING ALL CONTACTS!!!
+	case 9:
+		ATcommand[0] = '\0';
+		if(iForPBList <= MAXCONTACTS){
+			strcpy(ATcommand, "AT+CPBW=");
+			addBytToString(ATcommand, iForPBList);
+			strcat(ATcommand, "\r");
+			
+			SIM900.println(ATcommand);
+			delay(100);
+			iForPBList++;
+		}else{
+			resetStuff();
+		}
+		break;
+	default: break;
+	}	
+
+	//INPUT TEST
+	if(strlen(input) != 0){
+		switch(input[0]){
+		case '0':
+			state = 9;
+			break;
+		case '1':
+			//ADDING CONTACTS
+			strcpy(ATcommand, "AT+CPBW=,\"");
+			strncpy(tempNum, ptr_input + 2, 11);
+			strcat(ATcommand, tempNum);
+			strcat(ATcommand, "\",129,\"DUDE\"\r");
+
+			SIM900.print(ATcommand);
+			delay(100);
+			break;
+		case '2':
+		
+			break;
+		case '3':
+		
+			break;
+		case '4':
+			state = 4;
+			break;
+		case '5':
+			//create the list of contact numbers. and display them
+			ATcommand[0] = '\0';
+			countContacts();
+			for(byte i = 0; i < MAXCONTACTS; i++){
+				Serial.print(i + 1);
+				Serial.print(". ");
+				Serial.println(pbNumberList[i]);
+			}
+			break;
+		default: 
+			strcpy(ATcommand, input);
+			SIM900.println(ATcommand);
+			delay(100);
+			break;
+		}
+		input[0] = '\0';
+	}
+
+	while((SIM900.available() > 0) && (state != 5)){
+		inChar = SIM900.read();
+		Serial.print(inChar); 
+	}
+}
