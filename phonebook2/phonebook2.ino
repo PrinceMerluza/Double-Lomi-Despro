@@ -79,7 +79,7 @@ void loop(){
 		tmp = ""; 
 		switch(st.charAt(0)){
 		case '1':
-			//SIM900.print("AT+CPBW=,\"09262543854\",129,\"Last Test\"\r"); //thgis works
+			//SIM900.print("AT+CPBW=,\"\",129,\"Last Test\"\r"); //thgis works
 			//below does not work
 			tmp = "AT+CPBW=";
 			tmp.concat(",\"");
