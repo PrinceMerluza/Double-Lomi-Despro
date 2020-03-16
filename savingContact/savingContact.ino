@@ -25,7 +25,7 @@ void loop(){
 	}
 	
 	if(x == 0){
-		SIM900.print("AT+CPBW=1,\"09262543854\",129,\"Last Test\"\r");
+		SIM900.print("AT+CPBW=1,\"\",129,\"Last Test\"\r");
 		delay(100);
 		x = 1;
 	}
