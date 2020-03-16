@@ -1323,8 +1323,8 @@ void debugPrintMenu(){
 	}
 }
 void debugAddContact(){
-	pb_users.addContact("09262543854","PRINCE","0");
-	pb_users.addContact("09273579268","2Karla","0");
+	pb_users.addContact("","PRINCE","0");
+	pb_users.addContact("","2Karla","0");
 	pb_users.addContact("09123456789","3Test","1");
 	pb_users.addContact("09000000000","4Shit","1");
 	pb_users.addContact("09444444444","5NiceIe","1");
